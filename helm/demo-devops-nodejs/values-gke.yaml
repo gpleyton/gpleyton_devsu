@@ -8,6 +8,16 @@ image:
   tag: latest
   pullPolicy: Always
 
+# Requests reducidos para caber junto a ingress-nginx + cert-manager en 1 nodo e2-medium.
+# La app es liviana; puede usar más CPU por ráfaga hasta el límite.
+resources:
+  requests:
+    cpu: "25m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "256Mi"
+
 # El acceso público entra por el Ingress; el Service queda interno.
 service:
   type: ClusterIP
