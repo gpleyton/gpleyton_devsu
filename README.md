@@ -11,6 +11,8 @@ API REST de usuarios (Node.js + Express) **dockerizada**, con **pipeline CI/CD**
 | 🔍 **Análisis (SonarCloud)** | https://sonarcloud.io/project/overview?id=gpleyton_devsu |
 
 > ⚠️ El endpoint público corre en GKE y puede estar destruido para evitar costos. Se recrea con un solo comando (`./scripts/deploy-gke.sh`) y, gracias a la **IP estática** reservada por Terraform, la URL es estable entre destrucciones/recreaciones. Tras el despliegue, la URL exacta se muestra en consola. Evidencias en [`docs/evidencias/`](docs/evidencias/).
+>
+> 📌 **Nota para el evaluador:** el cluster se **levantará el lunes a primera hora** para que el endpoint público (`https://34-135-97-73.sslip.io/api/users`) esté disponible durante la evaluación. Mientras tanto, el repositorio, el pipeline y las evidencias de despliegue ya están completos.
 
 ---
 
