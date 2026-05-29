@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: demo-devops-nodejs:local
+    container_name: demo-devops-nodejs
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      DATABASE_NAME: "./dev.sqlite"
+      DATABASE_USER: "user"
+      DATABASE_PASSWORD: "password"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
