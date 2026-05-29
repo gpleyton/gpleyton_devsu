@@ -1,0 +1,37 @@
+### Pruebas de la API - Demo DevOps NodeJS
+### Compatible con la extensión "REST Client" de VS Code o el cliente HTTP de IntelliJ.
+### Cambia @baseUrl según el entorno (local, Docker o Kubernetes vía port-forward).
+
+@baseUrl = http://localhost:8000
+
+### Liveness probe
+GET {{baseUrl}}/api/health
+
+### Readiness probe
+GET {{baseUrl}}/api/health/ready
+
+### Listar usuarios
+GET {{baseUrl}}/api/users
+
+### Crear usuario
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "dni": "1234567890",
+  "name": "Juan Perez"
+}
+
+### Obtener usuario por id
+GET {{baseUrl}}/api/users/1
+
+### Obtener usuario inexistente (404)
+GET {{baseUrl}}/api/users/9999
+
+### Crear usuario inválido - falta dni (400)
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Sin DNI"
+}
