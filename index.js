@@ -6,6 +6,9 @@ import express from 'express'
 const app = express()
 const PORT = process.env.PORT || 8000
 
+// Do not expose the framework name/version in response headers
+app.disable('x-powered-by')
+
 sequelize.sync({ force: true }).then(() => console.log('db is ready'))
 
 app.use(express.json())

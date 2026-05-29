@@ -13,7 +13,7 @@ healthRouter.get("/ready", async (req, res) => {
     try {
         await sequelize.authenticate()
         res.status(200).json({ status: "READY", database: "UP" })
-    } catch (error) {
+    } catch {
         res.status(503).json({ status: "NOT_READY", database: "DOWN" })
     }
 })
