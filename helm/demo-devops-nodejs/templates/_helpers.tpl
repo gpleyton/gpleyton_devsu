@@ -1,9 +1,9 @@
-{{/* Nombre base del chart */}}
+{{/* Base chart name */}}
 {{- define "app.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-{{/* Nombre completo del release */}}
+{{/* Full release name */}}
 {{- define "app.fullname" -}}
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
@@ -17,7 +17,7 @@
 {{- end -}}
 {{- end -}}
 
-{{/* Etiquetas comunes */}}
+{{/* Common labels */}}
 {{- define "app.labels" -}}
 app.kubernetes.io/name: {{ include "app.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
@@ -25,7 +25,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version }}
 {{- end -}}
 
-{{/* Etiquetas de selección */}}
+{{/* Selector labels */}}
 {{- define "app.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "app.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}

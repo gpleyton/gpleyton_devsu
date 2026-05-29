@@ -67,8 +67,8 @@ spec:
               drop:
                 - ALL
           volumeMounts:
-            # SQLite necesita escribir su fichero; con readOnlyRootFilesystem
-            # montamos un volumen efímero dedicado para los datos.
+            # SQLite needs to write its file; with readOnlyRootFilesystem
+            # we mount a dedicated ephemeral volume for the data.
             - name: data
               mountPath: /data
       volumes:

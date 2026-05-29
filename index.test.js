@@ -66,14 +66,14 @@ describe('Health', () => {
         jest.clearAllMocks()
     })
 
-    test('Liveness probe responde UP', async () => {
+    test('Liveness probe returns UP', async () => {
         const response = await request(app).get('/api/health')
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({ status: 'UP' })
     })
 
-    test('Readiness probe responde READY cuando la BD está disponible', async () => {
+    test('Readiness probe returns READY when the database is available', async () => {
         jest.spyOn(sequelize, 'authenticate').mockResolvedValue()
         const response = await request(app).get('/api/health/ready')
 

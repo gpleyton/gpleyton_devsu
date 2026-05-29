@@ -1,7 +1,7 @@
-# Copia este archivo a terraform.tfvars y completa con tus valores reales.
-# terraform.tfvars está en .gitignore para no versionar datos de tu proyecto.
+# Copy this file to terraform.tfvars and fill in your real values.
+# terraform.tfvars is gitignored so project-specific data is not committed.
 
-project_id = "mi-proyecto-gcp"      # OBLIGATORIO: tu ID de proyecto de GCP
+project_id = "my-gcp-project"      # REQUIRED: your GCP project ID
 region     = "us-central1"
 zone       = "us-central1-a"
 

@@ -1,40 +1,40 @@
 ############################################
-# Habilitación de APIs necesarias
+# Required APIs
 ############################################
 resource "google_project_service" "services" {
   for_each = toset([
     "container.googleapis.com",        # GKE
     "artifactregistry.googleapis.com", # Artifact Registry
-    "compute.googleapis.com",          # red/instancias para GKE
+    "compute.googleapis.com",          # networking/instances for GKE
   ])
   service            = each.value
   disable_on_destroy = false
 }
 
 ############################################
-# Artifact Registry (repositorio Docker)
+# Artifact Registry (Docker repository)
 ############################################
 resource "google_artifact_registry_repository" "docker" {
   location      = var.region
   repository_id = var.artifact_repo_id
-  description   = "Imágenes Docker de la app demo-devops-nodejs"
+  description   = "Docker images for the demo-devops-nodejs app"
   format        = "DOCKER"
 
   depends_on = [google_project_service.services]
 }
 
 ############################################
-# Cluster de GKE (zonal para minimizar costo)
+# GKE cluster (zonal to minimize cost)
 ############################################
 resource "google_container_cluster" "primary" {
   name     = var.cluster_name
   location = var.zone
 
-  # Se elimina el node pool por defecto para gestionar uno propio
+  # Remove the default node pool to manage a custom one
   remove_default_node_pool = true
   initial_node_count       = 1
 
-  # Recomendaciones de seguridad básicas
+  # Basic security recommendations
   release_channel {
     channel = "REGULAR"
   }

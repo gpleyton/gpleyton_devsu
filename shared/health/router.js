@@ -3,12 +3,12 @@ import sequelize from "../database/database.js"
 
 const healthRouter = express.Router()
 
-// Liveness probe: indica que el proceso está vivo (no toca dependencias externas).
+// Liveness probe: reports that the process is running (no external dependencies).
 healthRouter.get("/", (req, res) => {
     res.status(200).json({ status: "UP" })
 })
 
-// Readiness probe: indica que la app está lista para recibir tráfico (verifica la BD).
+// Readiness probe: reports that the app is ready to serve traffic (checks the DB).
 healthRouter.get("/ready", async (req, res) => {
     try {
         await sequelize.authenticate()

@@ -8,10 +8,10 @@ terraform {
     }
   }
 
-  # Backend remoto recomendado para producción (estado en GCS).
-  # Se deja comentado para no requerir un bucket previo al evaluar.
+  # Recommended remote backend for production (state in GCS).
+  # Left commented to avoid requiring a pre-existing bucket for review.
   # backend "gcs" {
-  #   bucket = "REEMPLAZAR-tf-state-bucket"
+  #   bucket = "REPLACE-tf-state-bucket"
   #   prefix = "demo-devops-nodejs"
   # }
 }

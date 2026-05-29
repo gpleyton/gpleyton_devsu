@@ -1,6 +1,6 @@
 apiVersion: v2
 name: demo-devops-nodejs
-description: Chart de Helm para la API de usuarios (Prueba técnica DevOps Devsu)
+description: Helm chart for the users REST API (Devsu DevOps technical test)
 type: application
 version: 0.1.0
 appVersion: "1.0.0"

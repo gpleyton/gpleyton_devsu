@@ -1,6 +1,6 @@
-# Values para el despliegue en GKE con Ingress nginx + TLS (Let's Encrypt vía cert-manager).
-# El host usa sslip.io apuntando a la IP pública del ingress-nginx controller.
-# Uso:
+# Values for the GKE deployment with nginx Ingress + TLS (Let's Encrypt via cert-manager).
+# The host uses sslip.io pointing to the public IP of the ingress-nginx controller.
+# Usage:
 #   helm upgrade --install demo helm/demo-devops-nodejs -n devsu -f helm/demo-devops-nodejs/values-gke.yaml
 
 image:
@@ -8,8 +8,8 @@ image:
   tag: latest
   pullPolicy: Always
 
-# Requests reducidos para caber junto a ingress-nginx + cert-manager en 1 nodo e2-medium.
-# La app es liviana; puede usar más CPU por ráfaga hasta el límite.
+# Lower requests so it fits alongside ingress-nginx + cert-manager on a single e2-medium node.
+# The app is lightweight and can burst CPU up to the limit.
 resources:
   requests:
     cpu: "25m"
@@ -18,7 +18,7 @@ resources:
     cpu: "200m"
     memory: "256Mi"
 
-# El acceso público entra por el Ingress; el Service queda interno.
+# Public access comes through the Ingress; the Service stays internal.
 service:
   type: ClusterIP
   port: 80

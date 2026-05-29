@@ -6,6 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/name: demo-devops-nodejs
 data:
-  # Configuración no sensible de la aplicación
+  # Non-sensitive application configuration
   PORT: "8000"
   DATABASE_NAME: "/data/dev.sqlite"

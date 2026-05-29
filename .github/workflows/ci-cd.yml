@@ -1,17 +1,24 @@
-name: CI/CD
+name: Application CI/CD
 
-# Pipeline como código para la prueba técnica DevOps de Devsu.
-# Etapas: Build -> Tests + Coverage -> Análisis estático (SonarCloud) ->
-#         Vulnerability scan (Trivy) -> Build & Push imagen (GHCR) ->
-#         Deploy a Kubernetes (cluster kind efímero) con validación.
+# Application pipeline: Build -> Tests + Coverage -> Static analysis (SonarCloud) ->
+# Vulnerability scan (Trivy) -> Build & Push image (GHCR) ->
+# Deploy to Kubernetes (ephemeral kind cluster) with smoke test.
+# Infrastructure (Terraform) lives in a separate workflow: infrastructure.yml
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'terraform/**'
+      - 'docs/**'
+      - '**.md'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'terraform/**'
+      - 'docs/**'
+      - '**.md'
 
-# Evita ejecuciones concurrentes redundantes sobre la misma referencia
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,28 +32,28 @@ jobs:
   # 1) Build + Lint + Unit Tests + Code Coverage
   # ---------------------------------------------------------------------------
   build-test:
-    name: Build, Lint y Tests
+    name: Build, Lint & Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js ${{ env.NODE_VERSION }}
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Instalar dependencias (npm ci)
+      - name: Install dependencies (npm ci)
         run: npm ci
 
-      - name: Análisis de estilo (ESLint)
+      - name: Lint (ESLint)
         run: npm run lint
 
-      - name: Tests unitarios con cobertura
+      - name: Unit tests with coverage
         run: npm run test:coverage
 
-      - name: Publicar reporte de cobertura como artefacto
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage
@@ -54,20 +61,20 @@ jobs:
           retention-days: 7
 
   # ---------------------------------------------------------------------------
-  # 2) Análisis estático de código - SonarCloud
+  # 2) Static code analysis - SonarCloud
   # ---------------------------------------------------------------------------
   sonarcloud:
-    name: Análisis estático (SonarCloud)
+    name: Static analysis (SonarCloud)
     runs-on: ubuntu-latest
     needs: build-test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # SonarCloud necesita el historial completo para el blame/cobertura
+          # SonarCloud needs full history for blame/coverage
           fetch-depth: 0
 
-      - name: Descargar reporte de cobertura
+      - name: Download coverage report
         uses: actions/download-artifact@v4
         with:
           name: coverage
@@ -80,31 +87,31 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
 
   # ---------------------------------------------------------------------------
-  # 3) Build de imagen + escaneo de vulnerabilidades (Trivy) + push a GHCR
+  # 3) Image build + vulnerability scan (Trivy) + push to GHCR
   # ---------------------------------------------------------------------------
   docker:
-    name: Build, Scan y Push de imagen
+    name: Build, Scan & Push image
     runs-on: ubuntu-latest
     needs: build-test
     permissions:
       contents: read
-      packages: write       # necesario para publicar en GHCR
-      security-events: write # para subir resultados SARIF de Trivy
+      packages: write        # required to publish to GHCR
+      security-events: write # required to upload Trivy SARIF results
     outputs:
       image_tag: ${{ steps.meta.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Definir tags de imagen
+      - name: Define image tags
         id: meta
         run: |
           echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
-      - name: Configurar Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build de la imagen (carga local para escanear)
+      - name: Build image (load locally to scan)
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -113,7 +120,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Escaneo de vulnerabilidades con Trivy
+      - name: Vulnerability scan with Trivy
         uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tag }}
@@ -121,15 +128,15 @@ jobs:
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          exit-code: "0" # informativo: no bloquea el pipeline por CVEs de la imagen base
+          exit-code: "0" # informative: do not fail the pipeline on base image CVEs
 
-      - name: Subir resultados de Trivy a Code Scanning
+      - name: Upload Trivy results to Code Scanning
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
 
-      - name: Login a GitHub Container Registry
+      - name: Login to GitHub Container Registry
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
@@ -137,7 +144,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push de la imagen (sha + latest)
+      - name: Push image (sha + latest)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v6
         with:
@@ -150,28 +157,28 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ---------------------------------------------------------------------------
-  # 4) Despliegue en Kubernetes (cluster kind efímero) + validación
+  # 4) Application deployment to Kubernetes (ephemeral kind cluster) + smoke test
   # ---------------------------------------------------------------------------
-  deploy:
-    name: Deploy a Kubernetes (kind)
+  deploy-app:
+    name: Deploy application (Kubernetes)
     runs-on: ubuntu-latest
     needs: docker
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Crear cluster kind
+      - name: Create kind cluster
         uses: helm/kind-action@v1
         with:
           cluster_name: devsu
 
-      - name: Build de la imagen para el cluster
+      - name: Build image for the cluster
         run: docker build -t demo-devops-nodejs:ci .
 
-      - name: Cargar la imagen en kind
+      - name: Load image into kind
         run: kind load docker-image demo-devops-nodejs:ci --name devsu
 
-      - name: Desplegar con Helm
+      - name: Deploy with Helm
         run: |
           kubectl create namespace devsu --dry-run=client -o yaml | kubectl apply -f -
           helm upgrade --install demo helm/demo-devops-nodejs \
@@ -184,20 +191,20 @@ jobs:
             --set replicaCount=2 \
             --wait --timeout 180s
 
-      - name: Verificar el despliegue
+      - name: Verify deployment
         run: |
           kubectl -n devsu rollout status deployment/demo-demo-devops-nodejs --timeout=120s
           kubectl -n devsu get pods -o wide
-          echo "Réplicas listas:"
+          echo "Ready replicas:"
           kubectl -n devsu get deployment demo-demo-devops-nodejs -o jsonpath='{.status.readyReplicas}'; echo
 
-      - name: Smoke test de los endpoints
+      - name: Smoke test the endpoints
         run: |
           kubectl -n devsu port-forward svc/demo-demo-devops-nodejs 18080:80 &
           PF=$!
           sleep 5
           echo "Health:"; curl -sf http://localhost:18080/api/health | tee /dev/stderr; echo
-          echo "Crear usuario:"; curl -sf -X POST http://localhost:18080/api/users \
+          echo "Create user:"; curl -sf -X POST http://localhost:18080/api/users \
             -H 'Content-Type: application/json' -d '{"dni":"1234567890","name":"CI User"}' | tee /dev/stderr; echo
-          echo "Listar usuarios:"; curl -sf http://localhost:18080/api/users | tee /dev/stderr; echo
+          echo "List users:"; curl -sf http://localhost:18080/api/users | tee /dev/stderr; echo
           kill $PF || true

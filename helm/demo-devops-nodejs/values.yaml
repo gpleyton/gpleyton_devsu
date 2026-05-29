@@ -1,4 +1,4 @@
-# Valores por defecto del chart demo-devops-nodejs
+# Default values for the demo-devops-nodejs chart
 
 replicaCount: 2
 
@@ -10,12 +10,12 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
-# Variables no sensibles -> ConfigMap
+# Non-sensitive variables -> ConfigMap
 config:
   PORT: "8000"
   DATABASE_NAME: "/data/dev.sqlite"
 
-# Variables sensibles -> Secret
+# Sensitive variables -> Secret
 secret:
   DATABASE_USER: "user"
   DATABASE_PASSWORD: "password"
@@ -30,7 +30,7 @@ ingress:
   host: demo-devops.local
   path: /api
   pathType: Prefix
-  # Anotaciones (ej. cert-manager.io/cluster-issuer para emitir TLS)
+  # Annotations (e.g. cert-manager.io/cluster-issuer to issue TLS)
   annotations: {}
   tls:
     enabled: false
@@ -50,7 +50,7 @@ autoscaling:
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
 
-# Contexto de seguridad endurecido (non-root)
+# Hardened security context (non-root)
 podSecurityContext:
   runAsNonRoot: true
   runAsUser: 1000
