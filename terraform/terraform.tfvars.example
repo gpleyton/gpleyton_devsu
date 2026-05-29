@@ -1,0 +1,12 @@
+# Copia este archivo a terraform.tfvars y completa con tus valores reales.
+# terraform.tfvars está en .gitignore para no versionar datos de tu proyecto.
+
+project_id = "mi-proyecto-gcp"      # OBLIGATORIO: tu ID de proyecto de GCP
+region     = "us-central1"
+zone       = "us-central1-a"
+
+cluster_name = "demo-devops-cluster"
+node_count   = 2
+machine_type = "e2-small"
+
+artifact_repo_id = "demo-devops-nodejs"
