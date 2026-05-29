@@ -14,6 +14,11 @@ output "cluster_location" {
   value       = google_container_cluster.primary.location
 }
 
+output "ingress_static_ip" {
+  description = "Static external IP reserved for the ingress LoadBalancer"
+  value       = google_compute_address.ingress.address
+}
+
 output "artifact_registry_repository" {
   description = "Docker repository path in Artifact Registry"
   value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker.repository_id}"

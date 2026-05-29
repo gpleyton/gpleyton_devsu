@@ -4,13 +4,13 @@ API REST de usuarios (Node.js + Express) **dockerizada**, con **pipeline CI/CD**
 
 | | |
 |---|---|
-| 🌐 **Endpoint público (HTTPS)** | https://34-41-108-49.sslip.io/api/users |
+| 🌐 **Endpoint público (HTTPS)** | `https://<IP-ESTÁTICA>.sslip.io/api/users` (ver nota) |
 | 📦 **Repositorio** | https://github.com/gpleyton/gpleyton_devsu |
 | ⚙️ **Pipeline (GitHub Actions)** | https://github.com/gpleyton/gpleyton_devsu/actions |
 | 🐳 **Imagen (GHCR)** | https://github.com/gpleyton/gpleyton_devsu/pkgs/container/gpleyton_devsu |
 | 🔍 **Análisis (SonarCloud)** | https://sonarcloud.io/project/overview?id=gpleyton_devsu |
 
-> ⚠️ El endpoint público depende de un cluster de GKE que puede haberse destruido para evitar costos. Si no responde, ver [Despliegue en GKE](#despliegue-en-gke-google-cloud) para recrearlo, o las evidencias en [`docs/evidencias/`](docs/evidencias/).
+> ⚠️ El endpoint público corre en GKE y puede estar destruido para evitar costos. Se recrea con un solo comando (`./scripts/deploy-gke.sh`) y, gracias a la **IP estática** reservada por Terraform, la URL es estable entre destrucciones/recreaciones. Tras el despliegue, la URL exacta se muestra en consola. Evidencias en [`docs/evidencias/`](docs/evidencias/).
 
 ---
 
@@ -145,23 +145,12 @@ helm upgrade --install demo helm/demo-devops-nodejs -n devsu --create-namespace 
 ```
 
 ### Despliegue en GKE (Google Cloud)
-1. Crear la infraestructura con [Terraform](#infraestructura-como-código-terraform).
-2. Conectar `kubectl` y publicar la imagen:
+1. Crear la infraestructura con [Terraform](#infraestructura-como-código-terraform) (crea el cluster, el Artifact Registry y una **IP estática** para el endpoint).
+2. Desplegar la aplicación con el script incluido:
    ```bash
-   gcloud container clusters get-credentials demo-devops-cluster --zone us-central1-a --project devsu-demo-devops-gp
-   AR=us-central1-docker.pkg.dev/devsu-demo-devops-gp/demo-devops-nodejs/demo-devops-nodejs
-   docker buildx build --platform linux/amd64 -t $AR:latest --push .
+   ./scripts/deploy-gke.sh
    ```
-3. Instalar ingress-nginx y cert-manager (HTTPS) y desplegar con Helm:
-   ```bash
-   helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-   helm repo add jetstack https://charts.jetstack.io && helm repo update
-   helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -n ingress-nginx --create-namespace --set controller.service.type=LoadBalancer
-   helm upgrade --install cert-manager jetstack/cert-manager -n cert-manager --create-namespace --set crds.enabled=true
-   kubectl apply -f k8s/tls/clusterissuer.yaml
-   helm upgrade --install demo helm/demo-devops-nodejs -n devsu --create-namespace -f helm/demo-devops-nodejs/values-gke.yaml
-   ```
-   El host del Ingress usa `sslip.io` apuntando a la IP del LoadBalancer de nginx, y cert-manager emite el certificado de Let's Encrypt automáticamente. Evidencias en [`docs/evidencias/gke.md`](docs/evidencias/gke.md).
+   El script: conecta `kubectl`, construye y publica la imagen, instala **ingress-nginx** (con la IP estática), **cert-manager**, aplica el `ClusterIssuer` de Let's Encrypt y despliega la app con Helm. El host del Ingress usa `sslip.io` sobre la IP estática, así que la **URL es estable** entre recreaciones. Al terminar, imprime la URL pública (`https://<IP>.sslip.io/api/users`). Evidencias en [`docs/evidencias/gke.md`](docs/evidencias/gke.md).
 
 ### Infraestructura como Código (Terraform)
 Aprovisiona en GCP: APIs, **Artifact Registry** y un cluster **GKE**. Detalle en [`terraform/README.md`](terraform/README.md).
@@ -193,17 +182,19 @@ El despliegue a Kubernetes se valida en un cluster `kind` dentro del runner (100
 
 ## Probar la API
 
+Reemplaza `HOST` por la URL que imprime el script de despliegue (`https://<IP>.sslip.io`) o por `http://localhost:8000` en local.
+
 ```bash
 # Salud
-curl https://34-41-108-49.sslip.io/api/health
+curl $HOST/api/health
 
 # Crear usuario
-curl -X POST https://34-41-108-49.sslip.io/api/users \
+curl -X POST $HOST/api/users \
   -H 'Content-Type: application/json' \
   -d '{"dni":"1234567890","name":"Juan Perez"}'
 
 # Listar
-curl https://34-41-108-49.sslip.io/api/users
+curl $HOST/api/users
 ```
 
 También puedes importar la colección de **Postman** en [`docs/api/`](docs/api/) o usar el archivo `requests.http` con la extensión REST Client de VS Code.

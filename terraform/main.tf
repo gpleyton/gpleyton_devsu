@@ -24,6 +24,17 @@ resource "google_artifact_registry_repository" "docker" {
 }
 
 ############################################
+# Static external IP for the ingress LoadBalancer.
+# Keeps the public endpoint stable across cluster destroy/recreate.
+############################################
+resource "google_compute_address" "ingress" {
+  name   = "demo-devops-ingress-ip"
+  region = var.region
+
+  depends_on = [google_project_service.services]
+}
+
+############################################
 # GKE cluster (zonal to minimize cost)
 ############################################
 resource "google_container_cluster" "primary" {
