@@ -9,7 +9,14 @@ const PORT = process.env.PORT || 8000
 // Do not expose the framework name/version in response headers
 app.disable('x-powered-by')
 
-sequelize.sync({ force: true }).then(() => console.log('db is ready'))
+;(async () => {
+    try {
+        await sequelize.sync({ force: true })
+        console.log('db is ready')
+    } catch (err) {
+        console.error('db sync failed', err)
+    }
+})()
 
 app.use(express.json())
 app.use('/api/health', healthRouter)

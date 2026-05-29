@@ -10,9 +10,11 @@ WORKDIR /app
 # Build tools required to compile the native sqlite3 module
 RUN apk add --no-cache g++ make python3
 
-# Install dependencies from the lockfile (reproducible build)
+# Install dependencies from the lockfile (reproducible build).
+# Ignore lifecycle scripts for all packages (supply-chain safety) and then
+# rebuild only the native module we explicitly trust (sqlite3).
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts && npm rebuild sqlite3
 
 # Copy the source code
 COPY . .
