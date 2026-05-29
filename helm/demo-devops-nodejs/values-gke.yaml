@@ -26,7 +26,7 @@ service:
 ingress:
   enabled: true
   className: nginx
-  host: 34-41-108-49.sslip.io
+  host: 34-135-97-73.sslip.io
   path: /
   pathType: Prefix
   annotations:

@@ -4,7 +4,7 @@ API REST de usuarios (Node.js + Express) **dockerizada**, con **pipeline CI/CD**
 
 | | |
 |---|---|
-| 🌐 **Endpoint público (HTTPS)** | `https://<IP-ESTÁTICA>.sslip.io/api/users` (ver nota) |
+| 🌐 **Endpoint público (HTTPS)** | https://34-135-97-73.sslip.io/api/users (ver nota) |
 | 📦 **Repositorio** | https://github.com/gpleyton/gpleyton_devsu |
 | ⚙️ **Pipeline (GitHub Actions)** | https://github.com/gpleyton/gpleyton_devsu/actions |
 | 🐳 **Imagen (GHCR)** | https://github.com/gpleyton/gpleyton_devsu/pkgs/container/gpleyton_devsu |
