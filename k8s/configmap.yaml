@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-devops-nodejs-config
+  namespace: devsu
+  labels:
+    app.kubernetes.io/name: demo-devops-nodejs
+data:
+  # Configuración no sensible de la aplicación
+  PORT: "8000"
+  DATABASE_NAME: "/data/dev.sqlite"

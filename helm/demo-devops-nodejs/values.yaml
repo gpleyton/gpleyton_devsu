@@ -1,0 +1,63 @@
+# Valores por defecto del chart demo-devops-nodejs
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/gpleyton/gpleyton_devsu
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Variables no sensibles -> ConfigMap
+config:
+  PORT: "8000"
+  DATABASE_NAME: "/data/dev.sqlite"
+
+# Variables sensibles -> Secret
+secret:
+  DATABASE_USER: "user"
+  DATABASE_PASSWORD: "password"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: demo-devops.local
+  path: /api
+  pathType: Prefix
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "128Mi"
+  limits:
+    cpu: "250m"
+    memory: "256Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Contexto de seguridad endurecido (non-root)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+livenessPath: /api/health
+readinessPath: /api/health/ready
