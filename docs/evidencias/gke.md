@@ -37,3 +37,18 @@ GET  /api/health     -> {"status":"UP"}
 GET  /api/users      -> (balancea entre 2 réplicas con BD SQLite propia)
 POST /api/users      -> 201 con el usuario creado
 ```
+
+## Actualización: HTTPS con Ingress nginx + cert-manager + Let's Encrypt
+
+URL pública HTTPS: https://34-41-108-49.sslip.io/api/users
+Certificado: Let's Encrypt (válido), hostname vía sslip.io, redirección HTTP->HTTPS (308).
+
+```
+NAME                                                CLASS   HOSTS                   ADDRESS        PORTS     AGE
+ingress.networking.k8s.io/demo-demo-devops-nodejs   nginx   34-41-108-49.sslip.io   34.41.108.49   80, 443   2m53s
+
+NAME                                          READY   SECRET            AGE
+certificate.cert-manager.io/demo-devops-tls   True    demo-devops-tls   2m52s
+
+issuer: issuer=C=US, O=Let's Encrypt, CN=YR2
+```

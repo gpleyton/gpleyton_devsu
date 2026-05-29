@@ -1,0 +1,26 @@
+# Values para el despliegue en GKE con Ingress nginx + TLS (Let's Encrypt vía cert-manager).
+# El host usa sslip.io apuntando a la IP pública del ingress-nginx controller.
+# Uso:
+#   helm upgrade --install demo helm/demo-devops-nodejs -n devsu -f helm/demo-devops-nodejs/values-gke.yaml
+
+image:
+  repository: us-central1-docker.pkg.dev/devsu-demo-devops-gp/demo-devops-nodejs/demo-devops-nodejs
+  tag: latest
+  pullPolicy: Always
+
+# El acceso público entra por el Ingress; el Service queda interno.
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  host: 34-41-108-49.sslip.io
+  path: /
+  pathType: Prefix
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: demo-devops-tls

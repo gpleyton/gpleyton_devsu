@@ -30,6 +30,11 @@ ingress:
   host: demo-devops.local
   path: /api
   pathType: Prefix
+  # Anotaciones (ej. cert-manager.io/cluster-issuer para emitir TLS)
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: ""
 
 resources:
   requests:
